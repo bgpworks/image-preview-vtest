@@ -1,55 +1,78 @@
-const express = require("express")
-const resize = require("./resize")
+const express = require("express");
+const resize = require("./resize");
+const server = express();
+const cors = require("cors");
+const db = require("node-localdb");
+const user = db("data/user.json");
 const fs = require("fs");
-const server = express()
+const potrace = require("potrace");
+server.use(express.json());
+server.use(express.urlencoded({ extended: true }));
+server.use(express.static(`${__dirname}/client/public/assets/images/`));
+const corsOptions = {
+  origin: "http://localhost:3000",
+  credentials: true,
+};
 
+server.use(cors(corsOptions));
 
+// 사용자가 보내온 이미지 패쓰를 가져온다.
 server.post("/sendImage", (req, res) => {
-    // Extract the query-parameter
-    const widthString = req.query.width
-    const heightString = req.query.height
-    const format = req.query.format
+  // 이미지는  하나씩만 유지할 것이므로 기존에 가지고 있는 디비 삭제
+  user.remove({}).then(function (u) {
+    console.log(u);
+  });
 
-    // Parse to integer if possible
-    let width, height
-    if (widthString) {
-        width = parseInt(widthString)
-    }
-    if (heightString) {
-        height = parseInt(heightString)
-    }
-    // Set the content-type of the response
-    res.type(`image/${format || "png"}`)
+  // 입력된 이미지 주소를 로컬 디비에 저장
+  user.insert({ img: req.body.imgPath }).then(function (x) {
+    console.log(x);
+  });
 
-    // Get the resized image
-    resize("./download.png", format, width, height).pipe(res)
+  // 일단 성공 리스판스 보냄
+  // 아직 에러 케이스 anmandum
+  res.send("success");
+});
 
-    console.log(req)
-})
+//potrace test api
+server.post("/test", (req, res) => {
+  // var params = {
+  //   background: "#49ffd2",
+  //   color: "blue",
+  //   threshold: 120,
+  // };
+  var trace = new potrace.Potrace(req.body.params);
 
+  user.find({}).then(function (x) {
+    trace.loadImage(`./client/public/assets/images/${x[0].img}`, function (
+      err
+    ) {
+      if (err) throw err;
+      user.insert({ path: trace.getSVG() }).then(function (x) {
+        console.log(x);
+      });
+      res.end();
+    });
+  });
+});
+
+// 변경 된 이미지를 보여주   주소
 server.get("/", (req, res) => {
-   
-})
+  // 로컬 디비에 저장된 이미지 패스를 찾는다.
+  user.find({}).then(function (x) {
+    res.send(x[1].path);
+  });
+});
 
-server.listen(8000, () => {
-    console.log("Server started!")
-})
-
-// 유저 story
-// 사용자는 인풋에 자신의 이미지 path를 입력 하고 확인 버튼을 누른다.
-// 사용자가 가진 사진이 화면에 그대로 보여진다 ( 이미지 원본 실제 크기로 )
-// 화면에 보여진 사진 옆에 여러가지 콤보박스가 있고 콤보박스에서 원하는 스타일을 고를수 있다.
-// 원하는 스타일을 고른 뒤, 원하는 만큼의 값을 사용자는 직접 입력 할 수 있다.
-// 전송 버튼을 누르면 원하는 값의 쿼리가 쿼리 코드 미리보기 창에 보여진다.
-
+server.listen(8005, () => {
+  console.log("Server started!");
+});
 
 // 서버 스토리
 // 사용자가 보내온 이미지 패쓰를 가져온다.
 // 사용자가 보내온 이미지 패쓰를 화면에 뿌려준다.
-// 콤보박스에서 선택된 인자는 노드 스트림을 통해 전송 버튼 없이 실시간으로 받아온다.
+
+// 콤보박스에서 선택된 인자는 노드 스트림을 통해 전송 버튼 없이 실시간으로 받아온다. (option stream)
 // 받아온 인자를 가지고 해당되는 라이브러리 인수에 대입해 준다.
 // 원하는 값이 적용된 이미지가 리사이징 되어 화면에 보여준다.
 
-// 최종 -  nodeStream을 통해 interactive한 라이브러리를 만드는 것 
-
-
+// 최종 -  nodeStream을 통해 interactive한 라이브러리를 만드는 것
