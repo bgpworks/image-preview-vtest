@@ -11,10 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "node-localdb": "0.0.3",
+    "express-fileupload": "^1.2.0",
     "potrace": "^2.1.8",
     "sharp": "^0.26.1"
   },
