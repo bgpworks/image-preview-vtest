@@ -3,20 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@rebass/forms": "^4.0.6",
-    "@rebass/preset": "^4.0.5",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "brace": "^0.11.1",
-    "emotion-theming": "^10.0.27",
     "jsoneditor": "^9.1.1",
     "jsoneditor-react": "^3.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-lazyload": "^3.0.0",
-    "react-scripts": "3.4.3",
-    "rebass": "^4.0.7"
+    "react-scripts": "3.4.3"
   },
   "scripts": {
     "start": "react-scripts start",
