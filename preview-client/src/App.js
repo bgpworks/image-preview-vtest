@@ -33,7 +33,7 @@ function App() {
   };
 
   // 이미지 파일 전송
-  const uploadImgFile = async (e) => {
+  const uploadImgFile = (e) => {
     e.preventDefault();
 
     const formData = new FormData();
