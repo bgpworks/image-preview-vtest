@@ -17,6 +17,8 @@ const settingDefault = {
   turnPolicy: "black",
 };
 
+const API_URL = "http://localhost:8005/";
+
 function App() {
   const [state, setState] = React.useState({
     file: null,
@@ -40,7 +42,7 @@ function App() {
     const formData = new FormData();
     formData.append("image", file);
     let options = { method: "POST", body: formData };
-    ApiCall("http://localhost:8005/sendImage", options)
+    ApiCall(`${API_URL}sendImage`, options)
       .then(
         (data) => imageHandlingSubmit(state.paramsList),
         setState({
@@ -59,7 +61,7 @@ function App() {
       headers: { "Content-Type": "application/json" },
     };
 
-    ApiCall("http://localhost:8005/getAttr", options)
+    ApiCall(`${API_URL}getAttr`, options)
       .then((data) =>
         setState((state) => ({
           ...state,
@@ -157,7 +159,7 @@ function App() {
             className="image_size"
             dangerouslySetInnerHTML={{ __html: state.imagePath }}
           />
-          <img src={state.image} />
+          <img src={state.image} alt="preview_image" />
         </div>
         {/* 콤보박스 */}
         <div className="parameter_contents_container">
@@ -171,7 +173,9 @@ function App() {
               disabled={state.disabled}
             >
               {Object.keys(description).map((item) => (
-                <option value={item}> {item} </option>
+                <option value={item} key={`${item}_key`}>
+                  {item}
+                </option>
               ))}
             </select>
             {description[state.selectValue].input ? (
@@ -183,15 +187,20 @@ function App() {
             ) : (
               <select onChange={(e) => getValue(e)} disabled={state.disabled}>
                 {description[state.selectValue].options.map((item) => (
-                  <option value={item}> {item} </option>
+                  <option value={item} key={`${item}_value`}>
+                    {item}
+                  </option>
                 ))}
               </select>
             )}
           </div>
           {/* potrace parameters 설명 */}
           <div className="description_container">
-            <span> &#128161;</span>tip :
-            {description[state.selectValue].description}
+            <span role="img" aria-label="light">
+              {" "}
+              &#128161;
+            </span>
+            tip :{description[state.selectValue].description}
           </div>
           {/* 선택 된 parameters list */}
           <div className={`${state.imagePath ? "show" : "hide"}`}>
@@ -199,7 +208,7 @@ function App() {
             <p>* 초기값은 gatsby기본값입니다.</p>
             <div className="params_container">
               {Object.keys(state.paramsList).map((key) => (
-                <div className="params_items">
+                <div className="params_items" key={`${key}_params`}>
                   {`${key} :  ${state.paramsList[key]}`}
                   <button onClick={(e) => deleteParam(e, key)}> 삭제 </button>
                 </div>
