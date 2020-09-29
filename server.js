@@ -40,7 +40,7 @@ server.post("/sendImage", (req, res) => {
     `${__dirname}/tmp/megamiSoh.${uploadImgName.substr(len - 3)}`,
     function (err) {
       if (err) return res.status(500).send(err);
-      res.send({ msg: "업로드가 완료 되었습니다." });
+      res.send({ msg: "upload complete" });
     }
   );
 });
@@ -53,29 +53,37 @@ function imageTransform(path) {
 
 // 이미지의 파라미터 값을 받는다.
 server.post("/getAttr", (req, res) => {
+  let default_setting = {
+    color: `lightgray`,
+    optTolerance: 0.4,
+    turdSize: 100,
+    turnPolicy: "majority",
+  };
   // 파라미터값을 potrace에 전달하여 이미지를 변경한다.
-  var trace = new potrace.Potrace(req.body);
+  const isEmpty = (param) => {
+    return Object.keys(param).length === 0;
+  };
+  let params = isEmpty(req.body) ? default_setting : req.body;
+  let trace = new potrace.Potrace(params);
   trace.loadImage(`${__dirname}/tmp/megamiSoh.png`, function (err) {
     if (err) throw err;
-    var check = trace.getSVG();
-    res.type("image/svg+xml");
-    // 변경된 이미지를 저장
-    fs.writeFile(`${__dirname}/tmp/megamiSoh.svg`, check, (err) => {
-      if (err) console.log(" fileSync : " + err);
-      imageTransform(`${__dirname}/tmp/megamiSoh.svg`).pipe(res);
-    });
+    let getSvgFile = trace.getSVG();
+    res.send({ image: getSvgFile });
   });
 });
 
 // 이미지 미리보기
 server.get("/", (req, res) => {
   const format = req.query.format;
-  if (format === "svg") {
-    res.type("image/svg+xml");
-  } else {
-    res.type(`image/${format || "png"}`);
-  }
-  imageTransform(`${__dirname}/tmp/megamiSoh.${format || "png"}`).pipe(res);
+  // if (format === "svg") {
+  //   res.type("image/svg+xml");
+  // } else {
+  //   res.type(`image/${format || "png"}`);
+  // }
+  res.type("image/svg+xml");
+  // imageTransform(`${__dirname}/tmp/megamiSoh.${format || "png"}`).pipe(res);
+  imageTransform(`${__dirname}/tmp/megamiSoh.svg`).pipe(res);
+  res.send(imageTransform(`${__dirname}/tmp/megamiSoh.svg`));
 });
 
 server.listen(8005, () => {

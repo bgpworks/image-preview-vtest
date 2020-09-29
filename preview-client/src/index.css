@@ -27,8 +27,9 @@ h1 {
   white-space: pre-wrap;
   margin: 30px auto;
 }
-.imageSize > img {
+.imageSize > svg {
   width: 100%;
+  height: 100%;
 }
 button:hover {
   background-color: #f3d7b3 !important;
