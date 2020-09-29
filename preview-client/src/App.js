@@ -1,10 +1,5 @@
 import React from "react";
 import "./App.css";
-import ace from "brace";
-import "brace/mode/json";
-import "brace/theme/github";
-import { JsonEditor as Editor } from "jsoneditor-react";
-import "jsoneditor-react/es/editor.min.css";
 import { description } from "./description";
 
 async function ApiCall(url, options) {
@@ -15,166 +10,203 @@ async function ApiCall(url, options) {
   return result;
 }
 
-function getKeyByValue(object, value) {
-  return Object.keys(object).find((key) => object[key] === value);
-}
+const settingDefault = {
+  color: `lightgray`,
+  optTolerance: 0.4,
+  turdSize: 100,
+  turnPolicy: "black",
+};
 
 function App() {
   const [state, setState] = React.useState({
     file: null,
-    image: null,
     imagePath: null,
-    json: "",
-    id: 0,
+    imageName: "",
+    disabled: true,
     selectValue: "turnPolicy",
     params: { key: "turnPolicy", value: "" },
-    paramsList: [],
+    paramsList: {
+      color: `lightgray`,
+      optTolerance: 0.4,
+      turdSize: 100,
+      turnPolicy: "black",
+    },
   });
 
   // 이미지 파일 업로드
   const getImgFile = (e) => {
     e.preventDefault();
-    setState({
-      ...state,
-      image: null,
-      file: e.target.files[0],
-    });
-  };
-
-  // 이미지 파일 전송
-  const uploadImgFile = (e) => {
-    e.preventDefault();
-
+    let file = e.target.files[0];
     const formData = new FormData();
-    formData.append("image", state.file);
+    formData.append("image", file);
     let options = { method: "POST", body: formData };
     ApiCall("http://localhost:8005/sendImage", options)
-      .then((data) => imageHandlingSubmit())
+      .then(
+        (data) => imageHandlingSubmit(state.paramsList),
+        setState({
+          ...state,
+          file: file,
+          imageName: file.name,
+        }),
+      )
       .catch((err) => console.log(err.message));
   };
-
-  // 이미지 미리보기
-  // const showPreview = (format) => {
-  //   let options = { method: "GET" };
-  //   ApiCall(`http://localhost:8005?format=${format ?? "png"}`, options)
-  //     .then((data) => setState({ ...state, image: data.url }))
-  //     .catch((err) => console.log(err.message));
-  // };
-
-  // 이미지 핸들링에 전달 될 속성을 받아 상태에 저장한다.
-  const imageHandling = (e) => {
-    console.log(e);
-    setState({ ...state, json: e });
-  };
-
   // 이미지 파라미터값 전송
   const imageHandlingSubmit = (params) => {
-    // e.preventDefault();
-    console.log(params);
     let options = {
       method: "POST",
-      body: params,
+      body: JSON.stringify(params),
       headers: { "Content-Type": "application/json" },
     };
-    // 미리보기 태그만 렌더링 하기 위해 state.image에 미리보기 주소 새로 할당.
-    setState({ ...state, image: "" });
+
     ApiCall("http://localhost:8005/getAttr", options)
-      .then((data) => setState({ ...state, imagePath: data.image }))
+      .then((data) =>
+        setState((state) => ({
+          ...state,
+          disabled: false,
+          imagePath: data.image,
+        })),
+      )
       .catch((err) => console.log(err.message));
   };
 
   // 이미지 파라미터 콤보 박스
   const changeSelect = (e) => {
-    console.log(typeof e.target.value);
-    // console.log(JSON.parse(e.target.value));
     setState({
       ...state,
       selectValue: e.target.value,
       params: { ...state.params, key: e.target.value },
     });
   };
-
+  // 콤보박스 & 인풋 값 온체인지 이벤트
   const getValue = (e) => {
-    console.log(e.target.value);
     setState({
       ...state,
       params: { ...state.params, value: e.target.value },
-      json: `{${state.params.key} : ${e.target.value}}`,
     });
-    console.log(typeof e.target.value);
-    let val =
-      e.target.value === "true" || e.target.value === "false"
-        ? e.target.value
-        : `"${e.target.value}"`;
-    let parsingData = `{"${state.params.key}" : ${val}}`;
-    imageHandlingSubmit(parsingData);
+    // 인풋 값 boolean / number 체크
+    let typeCheck = isNaN(e.target.value)
+      ? e.target.value === "true" || e.target.value === "false"
+        ? JSON.parse(e.target.value)
+        : e.target.value
+      : parseInt(e.target.value);
+
+    let key = state.params.key;
+    let parsingJson = {
+      [key]: typeCheck,
+    };
+    let changedObject = Object.assign(state.paramsList, parsingJson);
+    setState({ ...state, paramsList: changedObject });
+    imageHandlingSubmit(changedObject);
+  };
+  // 설정 된 이미지 설정 값 삭제
+  const deleteParam = (e, key) => {
+    e.preventDefault();
+    delete state.paramsList[key.toString()];
+    setState({ ...state, paramsList: state.paramsList });
+    imageHandlingSubmit(state.paramsList);
+  };
+  // 설정 되돌리기
+  const goBackSetting = (e) => {
+    let changedObject = Object.assign(settingDefault);
+    setState({
+      ...state,
+      paramsList: changedObject,
+      params: { key: "turnPolicy", value: "" },
+      selectValue: "turnPolicy",
+    });
+    imageHandlingSubmit(settingDefault);
   };
   return (
     <div className="container">
       {/* 페이지 제목 */}
-      <h1>Image Preview Test</h1>
-
-      <div>
+      <h1> Image Preview Test </h1>
+      <div className="file_container">
         {/* 이미지 업로드 */}
-        <label className="button">
-          <input name="image" type="file" onChange={(e) => getImgFile(e)} />
-        </label>
-
-        {/* 이미지 업로드 전송 버튼 */}
-        <button variant="outline" mr={2} onClick={(e) => uploadImgFile(e)}>
-          이미지 업로드
-        </button>
+        <div className="filebox bs3-primary">
+          <input
+            className="upload-name"
+            value={state.imageName}
+            disabled="disabled"
+          />
+          <label htmlFor="filename">파일 찾기</label>
+          <input
+            type="file"
+            id="filename"
+            className="upload-hidden"
+            onChange={(e) => getImgFile(e)}
+          />
+        </div>
+        <button onClick={(e) => goBackSetting(e)}>설정 되돌리기</button>
       </div>
-
-      {/* 이미지 미리보기 창 */}
-      <div className="imageSize">
-        {` 
-        1. 이미지 업로드 후 원본 이미지 보기를 누르면, 해당 영역에 이미지가 나타납니다. 
-        2. json editor에 파라미터값을 입력 후 전송을 누르면, 해당 영역에 변경 값이 적용된 이미지가 나타납니다.
-        3. 원본 이미지를 누르면 언제든 원본 이미지보기가 가능합니다.
-        `}
-        <div
-          className="imageSize"
-          dangerouslySetInnerHTML={{ __html: state.imagePath }}
-        />
-        <img src={state.image} />
-      </div>
-
-      {/* preview button */}
-      {/* <button variant="outline" mr={2} onClick={() => showPreview("png")}>
-        원본 이미지 보기
-      </button> */}
-
-      {/*  json editor library 사용*/}
-      {/* <div className="editor_container">
-        <Editor
-          value={state.json}
-          onChange={imageHandling}
-          ace={ace}
-          theme="ace/theme/github"
-        />
-      </div> */}
-
-      {/* 콤보박스 */}
-      <div>
-        <select onChange={(e) => changeSelect(e)}>
-          {Object.keys(description).map((item) => (
-            <option value={item}>{item}</option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        {description[state.selectValue].input ? (
-          <input type="text" onChange={(e) => getValue(e)}></input>
-        ) : (
-          <select onChange={(e) => getValue(e)}>
-            {description[state.selectValue].options.map((item) => (
-              <option value={item}>{item}</option>
-            ))}
-          </select>
-        )}
-        {description[state.selectValue].description}
+      {/* 이미지 미리보기 */}
+      <div className="preview_container">
+        <div className="image_preview">
+          <div
+            className={`image_preview_description ${
+              state.imagePath ? "hide" : "show"
+            }`}
+          >
+            {` 
+          1. 파일 찾기를 눌러 파일을 선택해 주세요. 
+          2. 우측의 콤보박스를 이용해 원하는 파라미터를 선택 또는 입력 해주세요. 
+          3. 모든 선택이 끝나면 해당 공간에 이미지 미리보기가 생성됩니다.
+          `}
+          </div>
+          <div
+            className="image_size"
+            dangerouslySetInnerHTML={{ __html: state.imagePath }}
+          />
+          <img src={state.image} />
+        </div>
+        {/* 콤보박스 */}
+        <div className="parameter_contents_container">
+          <div className="combo_title">
+            * 선택 또는 입력된 파라미터의 값에 따라 이미지가 변경됩니다.
+          </div>
+          <div className="select_container">
+            <select
+              onChange={(e) => changeSelect(e)}
+              value={state.selectValue}
+              disabled={state.disabled}
+            >
+              {Object.keys(description).map((item) => (
+                <option value={item}> {item} </option>
+              ))}
+            </select>
+            {description[state.selectValue].input ? (
+              <input
+                type="text"
+                onChange={(e) => getValue(e)}
+                disabled={state.disabled}
+              ></input>
+            ) : (
+              <select onChange={(e) => getValue(e)} disabled={state.disabled}>
+                {description[state.selectValue].options.map((item) => (
+                  <option value={item}> {item} </option>
+                ))}
+              </select>
+            )}
+          </div>
+          {/* potrace parameters 설명 */}
+          <div className="description_container">
+            <span> &#128161;</span>tip :
+            {description[state.selectValue].description}
+          </div>
+          {/* 선택 된 parameters list */}
+          <div className={`${state.imagePath ? "show" : "hide"}`}>
+            <h2>설정된 파라미터 리스트</h2>
+            <p>* 초기값은 gatsby기본값입니다.</p>
+            <div className="params_container">
+              {Object.keys(state.paramsList).map((key) => (
+                <div className="params_items">
+                  {`${key} :  ${state.paramsList[key]}`}
+                  <button onClick={(e) => deleteParam(e, key)}> 삭제 </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
