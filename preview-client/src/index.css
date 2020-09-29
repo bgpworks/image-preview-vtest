@@ -1,40 +1,193 @@
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 h1 {
-  margin-bottom: 40px;
-}
-.container {
-  margin: 0 auto;
-  width: 80%;
+    margin-bottom: 40px;
 }
 
-.imageSize {
-  width: 700px;
-  /* min-height: 100px; */
-  text-align: left;
-  white-space: pre-wrap;
-  margin: 30px auto;
+.container {
+    margin: 0 auto;
+    width: 1100px;
 }
-.imageSize > svg {
-  width: 100%;
-  height: 100%;
+
+.image_size {
+    width: 700px;
+    min-height: 500px;
 }
-button:hover {
-  background-color: #f3d7b3 !important;
-  font-weight: bold;
+
+.parameter_contents_container {
+    width: 100%;
 }
+
+.image_preview {
+    text-align: left;
+    white-space: pre-wrap;
+    margin: 0 30px 0 0;
+    border: 3px solid #484747;
+    border-radius: 4px;
+}
+
+.image_preview_description {
+    padding: 40px 0 0;
+}
+
+.image_size>svg {
+    width: 100%;
+    height: 100%;
+}
+
+.combo_title {
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 12px;
+}
+
+.file_container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.filebox input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.filebox label {
+    display: inline-block;
+    padding: 0.5em 0.75em;
+    color: #999;
+    font-size: inherit;
+    line-height: normal;
+    vertical-align: middle;
+    background-color: #fdfdfd;
+    cursor: pointer;
+    border: 1px solid #ebebeb;
+    border-bottom-color: #e2e2e2;
+    border-radius: 0.25em;
+}
+
+.filebox .upload-name {
+    display: inline-block;
+    padding: 0.5em 0.75em;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: normal;
+    vertical-align: middle;
+    background-color: #f5f5f5;
+    border: 1px solid #ebebeb;
+    border-bottom-color: #e2e2e2;
+    border-radius: 0.25em;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.filebox.bs3-primary label {
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}
+
+.fileInput {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+button,
+.button {
+    background-color: #f9121226;
+    font-weight: bold;
+    border: 1px solid #f75858;
+    padding: 4px 13px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #d80303;
+}
+
+button:hover,
+.button:hover {
+    background-color: #f3d7b3 !important;
+    font-weight: bold;
+}
+
 .editor_container {
-  margin: 20px 0;
+    margin: 20px 0;
+}
+
+.select_container {
+    padding: 10px 0;
+}
+
+.select_container>select,
+.select_container>input {
+    padding: 7px;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.description_container {
+    font-size: 13px;
+}
+
+.description_container span {
+    font-size: 15px;
+}
+
+.params_container {
+    display: flex;
+    flex-direction: column;
+}
+
+.params_items {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.preview_container {
+    display: flex;
+    flex-direction: row;
+}
+
+.show {
+    display: flex;
+    flex-direction: column;
+}
+
+.hide {
+    display: none;
+}
+
+.show>h2 {
+    margin: 42px 0 5px;
+}
+
+.show>p {
+    margin: 0;
+    font-size: 10px;
+    padding: 0 0 5px;
+    border-bottom: 1px solid black;
+    text-align: right;
 }
