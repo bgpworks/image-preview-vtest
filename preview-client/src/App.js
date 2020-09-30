@@ -42,17 +42,13 @@ function App() {
     const formData = new FormData();
     formData.append("image", file);
     let options = { method: "POST", body: formData };
+    setState({
+      ...state,
+      file: file,
+      imageName: file.name,
+    });
     ApiCall(`${API_URL}sendImage`, options)
-      .then(
-        (data) => (
-          imageHandlingSubmit(settingDefault),
-          setState({
-            ...state,
-            file: file,
-            imageName: file.name,
-          })
-        ),
-      )
+      .then((data) => imageHandlingSubmit(settingDefault))
       .catch((err) => console.log(err.message));
   };
   // 이미지 파라미터값 전송
