@@ -24,7 +24,7 @@ function App() {
     file: null,
     imagePath: null,
     imageName: "",
-    disabled: true,
+    disabledBox: true,
     selectValue: "turnPolicy",
     params: { key: "turnPolicy", value: "" },
     paramsList: {
@@ -44,12 +44,14 @@ function App() {
     let options = { method: "POST", body: formData };
     ApiCall(`${API_URL}sendImage`, options)
       .then(
-        (data) => imageHandlingSubmit(state.paramsList),
-        setState({
-          ...state,
-          file: file,
-          imageName: file.name,
-        }),
+        (data) => (
+          imageHandlingSubmit(settingDefault),
+          setState({
+            ...state,
+            file: file,
+            imageName: file.name,
+          })
+        ),
       )
       .catch((err) => console.log(err.message));
   };
@@ -65,7 +67,7 @@ function App() {
       .then((data) =>
         setState((state) => ({
           ...state,
-          disabled: false,
+          disabledBox: false,
           imagePath: data.image,
         })),
       )
@@ -119,6 +121,16 @@ function App() {
     });
     imageHandlingSubmit(settingDefault);
   };
+  //  복사
+  const copy = (e) => {
+    const el = document.createElement("textarea");
+    el.value = JSON.stringify(state.paramsList);
+    document.body.appendChild(el);
+    el.select();
+    el.setSelectionRange(0, 9999);
+    document.execCommand("copy");
+    document.body.removeChild(el);
+  };
   return (
     <div className="container">
       {/* 페이지 제목 */}
@@ -129,7 +141,7 @@ function App() {
           <input
             className="upload-name"
             value={state.imageName}
-            disabled="disabled"
+            disabled={true}
           />
           <label htmlFor="filename">파일 찾기</label>
           <input
@@ -159,7 +171,6 @@ function App() {
             className="image_size"
             dangerouslySetInnerHTML={{ __html: state.imagePath }}
           />
-          <img src={state.image} alt="preview_image" />
         </div>
         {/* 콤보박스 */}
         <div className="parameter_contents_container">
@@ -170,7 +181,7 @@ function App() {
             <select
               onChange={(e) => changeSelect(e)}
               value={state.selectValue}
-              disabled={state.disabled}
+              disabled={state.disabledBox}
             >
               {Object.keys(description).map((item) => (
                 <option value={item} key={`${item}_key`}>
@@ -182,10 +193,13 @@ function App() {
               <input
                 type="text"
                 onChange={(e) => getValue(e)}
-                disabled={state.disabled}
+                disabled={state.disabledBox}
               ></input>
             ) : (
-              <select onChange={(e) => getValue(e)} disabled={state.disabled}>
+              <select
+                onChange={(e) => getValue(e)}
+                disabled={state.disabledBox}
+              >
                 {description[state.selectValue].options.map((item) => (
                   <option value={item} key={`${item}_value`}>
                     {item}
@@ -197,14 +211,21 @@ function App() {
           {/* potrace parameters 설명 */}
           <div className="description_container">
             <span role="img" aria-label="light">
-              {" "}
               &#128161;
             </span>
             tip :{description[state.selectValue].description}
           </div>
           {/* 선택 된 parameters list */}
           <div className={`${state.imagePath ? "show" : "hide"}`}>
-            <h2>설정된 파라미터 리스트</h2>
+            <div className="title_copy_container">
+              <h2>설정된 파라미터 리스트</h2>
+              <div className="copy" onClick={(e) => copy(e)}>
+                <span role="img" aria-label="clipboard">
+                  📋
+                </span>
+                copy
+              </div>
+            </div>
             <p>* 초기값은 gatsby기본값입니다.</p>
             <div className="params_container">
               {Object.keys(state.paramsList).map((key) => (
